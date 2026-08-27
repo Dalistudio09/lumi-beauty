@@ -1,0 +1,129 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Cormorant Garamond", ui-serif, Georgia, "Times New Roman", serif;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+
+  --color-bg: #f4ede4;
+  --color-bg-warm: #efe6db;
+  --color-surface: #fbf7f2;
+  --color-surface-2: #f3ebe3;
+  --color-ink: #3a2f2c;
+  --color-muted: #8c7b74;
+  --color-faint: #b5a69e;
+  --color-line: #e4d8ce;
+  --color-rose: #b88984;
+  --color-rose-deep: #9a6e69;
+  --color-rose-soft: #e8d4d0;
+  --color-on-rose: #fbf7f2;
+  --color-cream: #f7f1ea;
+  --color-success: #6f8f78;
+  --color-danger: #a45b55;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  --shadow-card:
+    0px 0px 0px 1px rgba(58, 47, 44, 0.06),
+    0px 1px 2px -1px rgba(58, 47, 44, 0.06),
+    0px 8px 24px -12px rgba(58, 47, 44, 0.12);
+  --shadow-card-hover:
+    0px 0px 0px 1px rgba(58, 47, 44, 0.08),
+    0px 1px 2px -1px rgba(58, 47, 44, 0.08),
+    0px 10px 28px -12px rgba(58, 47, 44, 0.16);
+
+  --ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-quick: 150ms;
+  --motion-fast: 250ms;
+  --motion-slow: 400ms;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html,
+  body,
+  #app {
+    min-height: 100dvh;
+    background: var(--color-bg);
+    color: var(--color-ink);
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  img {
+    outline: 1px solid rgba(58, 47, 44, 0.08);
+    outline-offset: -1px;
+  }
+}
+
+@keyframes lumi-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.lumi-enter {
+  animation: lumi-rise var(--motion-slow) var(--ease-smooth-out) both;
+}
+
+.lumi-enter-2 {
+  animation-delay: 70ms;
+}
+.lumi-enter-3 {
+  animation-delay: 140ms;
+}
+.lumi-enter-4 {
+  animation-delay: 210ms;
+}
+.lumi-enter-5 {
+  animation-delay: 280ms;
+}
+.lumi-enter-6 {
+  animation-delay: 350ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lumi-enter,
+  .lumi-enter-2,
+  .lumi-enter-3,
+  .lumi-enter-4,
+  .lumi-enter-5,
+  .lumi-enter-6 {
+    animation: none;
+  }
+
+  button,
+  [role="button"] {
+    transition: none;
+  }
+}
