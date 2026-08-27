@@ -8,7 +8,7 @@ Telegram Mini App записи в студию красоты Lumi.
 
 - TanStack Start + React + Vite
 - Tailwind CSS
-- Postgres (Neon в проде, PGLite локально)
+- Postgres по `DATABASE_URL` (Neon на Vercel)
 - Telegram Bot API
 
 ## Локально
@@ -16,7 +16,8 @@ Telegram Mini App записи в студию красоты Lumi.
 ```bash
 npm install
 cp .env.example .env
-# впишите TELEGRAM_BOT_TOKEN
+# TELEGRAM_BOT_TOKEN — обязательно
+# DATABASE_URL — необязательно: без неё локально поднимется PGLite
 npm run dev
 ```
 
@@ -24,23 +25,27 @@ npm run dev
 
 ## Vercel
 
-1. Залейте этот репозиторий на GitHub.
+На Vercel PGlite **не используется**. Записи и скрытые услуги идут только в Postgres.
+
+1. Залейте репозиторий на GitHub.
 2. Import в [Vercel](https://vercel.com/new).
 3. Environment Variables:
 
 | Name | Value |
 |---|---|
 | `TELEGRAM_BOT_TOKEN` | токен бота |
-| `DATABASE_URL` | строка Neon Postgres |
+| `DATABASE_URL` | строка Neon / Postgres, **обязательна** |
 | `VITE_AUTH_ENABLED` | `false` |
 
+`DATABASE_URL` нужна и для сборки (миграции), и для рантайма.
+
 4. Deploy.
-5. В @BotFather укажите домен Mini App (HTTPS URL деплоя).
+5. В @BotFather укажите HTTPS-домен Mini App.
 6. Откройте Mini App один раз — вебхук `/api/telegram/webhook` регистрируется сам.
 
 Бот: [@thelumibeautybot](https://t.me/thelumibeautybot)
 
-`/start` отправляет фото студии и кнопку **Записаться**. Новая запись уходит админу в Telegram и сохраняется в базе, даже если сообщение не дошло.
+`/start` отправляет фото студии и кнопку **Записаться**. Новая запись уходит админу в Telegram и сохраняется в Postgres, даже если сообщение не дошло.
 
 ## Не коммитить
 
