@@ -210,19 +210,23 @@ export const createBooking = createServerFn({ method: "POST" })
     const row = inserted[0];
     if (!row) throw new Error("Не удалось сохранить запись");
     const booking = mapBooking(row);
-    await notifyAdmin({
-      id: booking.id,
-      service_name: booking.serviceName,
-      master_name: booking.masterName,
-      date: booking.date,
-      time: booking.time,
-      price: booking.price,
-      client_name: booking.clientName,
-      phone: booking.phone,
-      has_allergy: booking.hasAllergy,
-      allergy_note: booking.allergyNote,
-      comment: booking.comment,
-    });
+    try {
+      await notifyAdmin({
+        id: booking.id,
+        service_name: booking.serviceName,
+        master_name: booking.masterName,
+        date: booking.date,
+        time: booking.time,
+        price: booking.price,
+        client_name: booking.clientName,
+        phone: booking.phone,
+        has_allergy: booking.hasAllergy,
+        allergy_note: booking.allergyNote,
+        comment: booking.comment,
+      });
+    } catch {
+      // Заявка уже в базе — сбой Telegram не откатывает запись.
+    }
     return booking;
   });
 
@@ -231,16 +235,20 @@ export const listAdminBookings = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     requireAdmin(data);
     const sql = await getSql();
-    const rows = data.status
-      ? await sql<BookingRow>`
-          select * from bookings
-          where status = ${data.status}
-          order by created_at desc
-        `
-      : await sql<BookingRow>`
-          select * from bookings
-          order by case when status = 'new' then 0 else 1 end, created_at desc
-        `;
+    const status = data.status?.trim() || "";
+    const rows =
+      status && status !== "all"
+        ? await sql<BookingRow>`
+            select *
+            from bookings
+            where status = ${status}
+            order by created_at desc
+          `
+        : await sql<BookingRow>`
+            select *
+            from bookings
+            order by case when status = 'new' then 0 else 1 end, created_at desc
+          `;
     return rows.map(mapBooking);
   });
 

@@ -33,6 +33,15 @@ type BookingNotice = {
   comment: string;
 };
 
+function readEnv(name: string): string {
+  const env =
+    typeof process === "undefined"
+      ? undefined
+      : (process.env as Record<string, string | undefined> | undefined);
+  const value = env?.[name];
+  return typeof value === "string" ? value.trim() : "";
+}
+
 function tokenFromDotenv() {
   try {
     const text = readFileSync(join(process.cwd(), ".env"), "utf8");
@@ -55,7 +64,7 @@ function tokenFromDotenv() {
 }
 
 export function getBotToken() {
-  return (process.env.TELEGRAM_BOT_TOKEN ?? "").trim() || tokenFromDotenv();
+  return readEnv("TELEGRAM_BOT_TOKEN") || tokenFromDotenv();
 }
 
 export function publicOriginFromRequest(request?: Request) {
@@ -102,6 +111,10 @@ export function verifyInitData(initData: string, token: string) {
   }
 }
 
+function isAdminId(id: string | number) {
+  return String(id) === ADMIN_TELEGRAM_ID;
+}
+
 export function resolveClient(input: {
   initData?: string;
   previewId?: string;
@@ -115,21 +128,14 @@ export function resolveClient(input: {
     }
     return {
       telegramId: String(user.id),
-      isAdmin: String(user.id) === ADMIN_TELEGRAM_ID,
+      isAdmin: isAdminId(user.id),
       firstName: user.first_name ?? "",
     };
   }
-  if (token) {
-    return {
-      telegramId: input.previewId?.trim() || "web-guest",
-      isAdmin: false,
-      firstName: "",
-    };
-  }
   return {
-    telegramId: input.previewId?.trim() || "preview-client",
-    isAdmin: true,
-    firstName: "Preview",
+    telegramId: input.previewId?.trim() || "web-guest",
+    isAdmin: false,
+    firstName: "",
   };
 }
 
@@ -249,12 +255,21 @@ export function formatAdminNotice(booking: BookingNotice) {
 
 export async function notifyAdmin(booking: BookingNotice) {
   try {
-    await telegramCall("sendMessage", {
-      chat_id: ADMIN_TELEGRAM_ID,
+    const token = getBotToken();
+    if (!token) {
+      console.error("[lumi] notifyAdmin skipped: no TELEGRAM_BOT_TOKEN");
+      return;
+    }
+    const result = await telegramCall("sendMessage", {
+      chat_id: Number(ADMIN_TELEGRAM_ID),
       text: formatAdminNotice(booking),
+      disable_web_page_preview: true,
     });
-  } catch {
-    // Booking is already saved — Telegram delivery must not roll it back.
+    if (!result.ok) {
+      console.error("[lumi] notifyAdmin failed:", result.description);
+    }
+  } catch (err) {
+    console.error("[lumi] notifyAdmin error:", err);
   }
 }
 
